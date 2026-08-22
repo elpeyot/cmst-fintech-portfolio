@@ -1,0 +1,6 @@
+repayment_id,loan_id,amount_usd,paid_at,is_overdue
+1001,101,540,2026-03-01,false
+1002,102,812,2026-02-10,false
+1003,103,6120,2026-03-05,false
+1004,104,600,2026-02-20,true
+1005,105,0,2026-02-15,true

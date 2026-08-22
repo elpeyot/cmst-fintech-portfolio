@@ -1,0 +1,25 @@
+# Copy this to ~/.dbt/profiles.yml (or export DBT_PROFILES_DIR=./analytics/dbt)
+# Local target points at the docker-compose postgres container.
+# The "prod" target points at RDS once you've deployed with Terraform —
+# fill in the host from `terraform output rds_endpoint`.
+cmst:
+  target: local
+  outputs:
+    local:
+      type: postgres
+      host: localhost
+      port: 5432
+      user: cmst_admin
+      password: cmst_local_dev_only
+      dbname: cmst
+      schema: analytics
+      threads: 4
+    prod:
+      type: postgres
+      host: "{{ env_var('CMST_RDS_HOST') }}"
+      port: 5432
+      user: "{{ env_var('CMST_RDS_USER') }}"
+      password: "{{ env_var('CMST_RDS_PASSWORD') }}"
+      dbname: cmst
+      schema: analytics
+      threads: 4

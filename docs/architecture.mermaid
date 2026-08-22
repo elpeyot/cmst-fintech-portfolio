@@ -1,0 +1,92 @@
+flowchart TB
+
+subgraph Client["Clients"]
+  U[Mobile App User]
+end
+
+subgraph Edge["Edge / CDN"]
+  DNS[Route 53]
+  CDN[CloudFront + AWS WAF]
+end
+
+subgraph VPC["VPC — 10.0.0.0/16, 3 Availability Zones"]
+  subgraph Public["Public Subnets — sg-alb"]
+    ALB[Application Load Balancer]
+    NAT[NAT Gateway]
+  end
+
+  subgraph AppTier["Private App Subnets — sg-app"]
+    GW[Internal API Gateway]
+    KYC[KYC / Identity Service]
+    Circles[Circles and Social Service]
+    Lending[Lending and Campaigns Service]
+    Arb[Guaranty and Arbitration Service]
+    Pay[Payments / PSP Integration Service]
+  end
+
+  subgraph DataTier["Private Data Subnets — sg-data"]
+    DB[(RDS PostgreSQL, Multi-AZ, KMS-encrypted)]
+    Cache[(ElastiCache Redis)]
+    Bus[(MSK / Kinesis Event Stream)]
+  end
+
+  subgraph AnalyticsTier["Analytics Subnet — sg-analytics"]
+    Lake[(S3 Data Lake: raw / curated)]
+    ETL[Airflow + Glue + dbt]
+    DW[(Redshift Serverless)]
+  end
+
+  VPCE[VPC Endpoints: S3, KMS, Secrets Manager]
+end
+
+subgraph DevOps["DevOps Pipeline"]
+  Repo[GitHub Monorepo]
+  CI[GitHub Actions CI/CD]
+  IaC[Terraform Modules: network, security, ecs, rds, msk, redshift]
+  Reg[ECR Image Registry]
+end
+
+subgraph Obs["Observability and Compliance"]
+  Logs[CloudWatch Logs and Metrics]
+  Dash1[Managed Grafana]
+  Sec[GuardDuty + AWS Config + CloudTrail org trail]
+end
+
+subgraph Output["Portfolio Output"]
+  BI[Metabase / QuickSight Dashboard]
+  Docs[README + Architecture Decision Records]
+end
+
+U --> DNS --> CDN --> ALB --> GW
+GW --> KYC
+GW --> Circles
+GW --> Lending
+GW --> Arb
+GW --> Pay
+
+KYC --> DB
+Circles --> DB
+Lending --> DB
+Arb --> DB
+Pay --> DB
+KYC --> Cache
+
+Lending --> Bus
+Arb --> Bus
+Pay --> Bus
+Bus --> ETL --> Lake --> DW --> BI
+
+Repo --> CI --> Reg --> KYC
+CI --> IaC --> VPC
+
+KYC --> Logs
+Lending --> Logs
+Pay --> Logs
+Arb --> Logs
+Logs --> Dash1
+
+VPC --> VPCE
+VPC --> Sec
+
+BI --> Docs
+IaC --> Docs

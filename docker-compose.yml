@@ -1,0 +1,120 @@
+# Local test stack — everything here runs on your Linux VM with zero AWS cost.
+# It mirrors the AWS architecture 1:1: postgres <-> RDS, redis <-> ElastiCache,
+# each *-service <-> its ECS Fargate service behind the shared ALB.
+#
+# Usage: docker compose up -d --build
+# All five services share one Postgres instance/database here for simplicity;
+# in production each owns its own schema (or its own RDS instance).
+
+services:
+  postgres:
+    image: postgres:16
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: cmst
+      POSTGRES_USER: cmst_admin
+      POSTGRES_PASSWORD: cmst_local_dev_only
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U cmst_admin -d cmst"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  kyc-service:
+    build: ./services/kyc-service
+    restart: unless-stopped
+    depends_on:
+      postgres: { condition: service_healthy }
+      redis:    { condition: service_healthy }
+    environment:
+      DB_HOST: postgres
+      DB_PORT: "5432"
+      DB_NAME: cmst
+      DB_USER: cmst_admin
+      DB_PASSWORD: cmst_local_dev_only
+      REDIS_HOST: redis
+      REDIS_PORT: "6379"
+    ports:
+      - "8080:8080"
+
+  circles-service:
+    build: ./services/circles-service
+    restart: unless-stopped
+    depends_on:
+      postgres: { condition: service_healthy }
+    environment:
+      DB_HOST: postgres
+      DB_PORT: "5432"
+      DB_NAME: cmst
+      DB_USER: cmst_admin
+      DB_PASSWORD: cmst_local_dev_only
+    ports:
+      - "8083:8080"
+
+  lending-service:
+    build: ./services/lending-service
+    restart: unless-stopped
+    depends_on:
+      postgres: { condition: service_healthy }
+    environment:
+      DB_HOST: postgres
+      DB_PORT: "5432"
+      DB_NAME: cmst
+      DB_USER: cmst_admin
+      DB_PASSWORD: cmst_local_dev_only
+    ports:
+      - "8084:8080"
+
+  arbitration-service:
+    build: ./services/arbitration-service
+    restart: unless-stopped
+    depends_on:
+      postgres: { condition: service_healthy }
+    environment:
+      DB_HOST: postgres
+      DB_PORT: "5432"
+      DB_NAME: cmst
+      DB_USER: cmst_admin
+      DB_PASSWORD: cmst_local_dev_only
+    ports:
+      - "8085:8080"
+
+  payments-service:
+    build: ./services/payments-service
+    restart: unless-stopped
+    depends_on:
+      postgres: { condition: service_healthy }
+    environment:
+      DB_HOST: postgres
+      DB_PORT: "5432"
+      DB_NAME: cmst
+      DB_USER: cmst_admin
+      DB_PASSWORD: cmst_local_dev_only
+    ports:
+      - "8086:8080"
+
+  adminer:
+    image: adminer:4
+    restart: unless-stopped
+    ports:
+      - "8081:8080"
+    depends_on:
+      - postgres
+
+volumes:
+  pgdata:

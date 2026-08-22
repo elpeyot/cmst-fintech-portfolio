@@ -1,0 +1,6 @@
+loan_id,user_id,circle_id,amount_usd,term_months,status,created_at
+101,u_ama,1,3200,6,active,2026-02-01
+102,u_johnatan,1,10000,6,active,2026-01-10
+103,u_luc,2,6000,4,repaid,2025-11-05
+104,u_agnes,3,4500,8,active,2026-01-20
+105,u_nash,4,8000,5,defaulted,2025-10-15

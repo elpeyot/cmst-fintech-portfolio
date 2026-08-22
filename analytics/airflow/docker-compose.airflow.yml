@@ -1,0 +1,28 @@
+# Lightweight single-container Airflow for local demo/testing.
+# Not production topology (no separate scheduler/webserver/workers) —
+# that's an intentional simplification so it starts in ~60s on a laptop/VM.
+# Usage:
+#   docker compose -f docker-compose.airflow.yml up
+
+services:
+  airflow:
+    image: apache/airflow:2.9.3
+    command: standalone
+    ports:
+      - "8082:8080"
+    environment:
+      AIRFLOW__CORE__LOAD_EXAMPLES: "false"
+      AIRFLOW__CORE__EXECUTOR: SequentialExecutor
+      CMST_DB_HOST: host.docker.internal
+      CMST_DB_PORT: "5432"
+      CMST_DB_NAME: cmst
+      CMST_DB_USER: cmst_admin
+      CMST_DB_PASSWORD: cmst_local_dev_only
+    volumes:
+      - ./dags:/opt/airflow/dags
+      - airflow_data:/opt/airflow
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+volumes:
+  airflow_data:

@@ -1,0 +1,31 @@
+version: 2
+
+models:
+  - name: fact_loan
+    description: "One row per loan, enriched with its circle type and rate."
+    columns:
+      - name: loan_id
+        tests: [unique, not_null]
+      - name: circle_type
+        tests:
+          - not_null
+          - accepted_values:
+              values: ['Area', 'Nation', 'Relative', 'Religion']
+
+  - name: fact_repayment
+    description: "One row per repayment event, linked back to its loan and circle."
+    columns:
+      - name: repayment_id
+        tests: [unique, not_null]
+      - name: loan_id
+        tests:
+          - not_null
+          - relationships:
+              to: ref('fact_loan')
+              field: loan_id
+
+  - name: circle_default_rates
+    description: "Default rate and average loan size, aggregated by ANRR circle type — the key portfolio-health metric from the CMST white paper's guaranty model."
+    columns:
+      - name: circle_type
+        tests: [unique, not_null]

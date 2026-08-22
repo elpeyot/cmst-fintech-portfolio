@@ -1,0 +1,24 @@
+# Terraform
+**/.terraform/
+*.tfstate
+*.tfstate.*
+*.tfplan
+tfplan
+crash.log
+
+# dbt
+analytics/dbt/target/
+analytics/dbt/logs/
+analytics/dbt/dbt_packages/
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+
+# Docker / local data
+pgdata/
+
+# Misc
+.DS_Store
+.env
