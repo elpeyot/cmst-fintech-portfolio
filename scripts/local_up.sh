@@ -14,7 +14,7 @@ done
 echo "    Postgres is ready."
 
 echo "==> Running dbt seed + run + test (local target, against the compose Postgres)..."
-export DBT_PROFILES_DIR="$(pwd)/analytics/dbt"
+
 ( cd analytics/dbt && dbt seed --target local && dbt run --target local && dbt test --target local )
 
 echo "==> Starting Airflow (standalone mode)..."
