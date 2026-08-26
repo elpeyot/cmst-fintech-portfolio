@@ -13,6 +13,7 @@ services:
     environment:
       AIRFLOW__CORE__LOAD_EXAMPLES: "false"
       AIRFLOW__CORE__EXECUTOR: SequentialExecutor
+      _PIP_ADDITIONAL_REQUIREMENTS: "dbt-postgres==1.9.0"
       CMST_DB_HOST: host.docker.internal
       CMST_DB_PORT: "5432"
       CMST_DB_NAME: cmst
@@ -20,6 +21,7 @@ services:
       CMST_DB_PASSWORD: cmst_local_dev_only
     volumes:
       - ./dags:/opt/airflow/dags
+      - ../dbt:/opt/airflow/analytics/dbt
       - airflow_data:/opt/airflow
     extra_hosts:
       - "host.docker.internal:host-gateway"
